@@ -3,18 +3,31 @@
 namespace Jinya\Router\Router;
 
 use DirectoryIterator;
+use FastRoute\Dispatcher;
 use Jinya\Router\Attributes\Controller;
 use Jinya\Router\Attributes\Route;
 use Jinya\Router\Extensions\Extension;
+use Jinya\Router\Http\ControllerMiddleware;
+use Jinya\Router\Http\FunctionMiddleware;
+use Jinya\Router\Templates\Engine;
+use Laminas\Diactoros\ResponseFactory;
+use Laminas\Diactoros\ServerRequestFactory;
+use Laminas\HttpHandlerRunner\Emitter\SapiEmitter;
+use Laminas\HttpHandlerRunner\RequestHandlerRunner;
+use Laminas\Stratigility\MiddlewarePipe;
+use Nyholm\Psr7\Response;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 use RuntimeException;
+use Throwable;
+
+use function Laminas\Stratigility\middleware;
 
 /**
- * @internal
- * Helper class to generate the routing table
+ * The router that actually handles requests
  */
 class Router
 {
@@ -31,8 +44,11 @@ class Router
      * @param string $controllerDirectory The directory the controllers reside in
      * @param Extension ...$extensions The extensions to use during building the routing table
      */
-    public function __construct(string $cacheDirectory, private readonly string $controllerDirectory, Extension ...$extensions)
-    {
+    private function __construct(
+        string $cacheDirectory,
+        private readonly string $controllerDirectory,
+        Extension ...$extensions
+    ) {
         $routingCacheBaseDir = $cacheDirectory . DIRECTORY_SEPARATOR . 'routing' . DIRECTORY_SEPARATOR;
         if (!mkdir($routingCacheBaseDir, recursive: true) && !is_dir($routingCacheBaseDir)) {
             throw new RuntimeException(sprintf('Directory "%s" was not created', $routingCacheBaseDir));
@@ -47,9 +63,25 @@ class Router
      *
      * @return string
      */
-    public function getCacheFile(): string
+    private function getCacheFile(): string
     {
         return $this->cacheFile;
+    }
+
+    /**
+     * Prepares the routing table and writes it to the cache file
+     *
+     * @param bool $force Force the generation of the routing table, this will overwrite the current routing table
+     * @return void
+     * @throws ReflectionException
+     */
+    private function prepareRoutingCache(bool $force = false): void
+    {
+        $cacheFileExists = file_exists($this->cacheFile);
+        if (!$cacheFileExists || $force) {
+            $routingTable = $this->buildTable();
+            file_put_contents($this->cacheFile, $routingTable);
+        }
     }
 
     /**
@@ -58,18 +90,21 @@ class Router
      * @return string
      * @throws ReflectionException
      */
-    public function buildTable(): string
+    private function buildTable(): string
     {
         $controllerTable = $this->buildControllerTable();
 
         $routingTable = "<?php" . PHP_EOL .
             'return \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $r) {' . PHP_EOL .
             $controllerTable . PHP_EOL .
-            implode(PHP_EOL, array_map(static fn(Extension $extension) => $extension->additionalRoutes(), $this->extensions)) . PHP_EOL .
+            implode(
+                PHP_EOL,
+                array_map(static fn(Extension $extension) => $extension->additionalRoutes(), $this->extensions)
+            ) . PHP_EOL .
             '});';
 
         foreach ($this->extensions as $extension) {
-            $extension->afterGeneration($routingTable);
+            $routingTable = $extension->afterGeneration($routingTable);
         }
 
         return $routingTable;
@@ -90,6 +125,7 @@ class Router
         foreach ($iterator as $controller) {
             if ($controller->getExtension() === 'php') {
                 include_once $controller->getPath();
+
                 $classes[] = $this->getClassNameFromFile($controller->getFilename());
             }
         }
@@ -99,7 +135,6 @@ class Router
         }
 
         foreach ($classes as $class) {
-            /** @var class-string $class */
             $reflectionControllerClass = new ReflectionClass($class);
             $controllerAttributes = $reflectionControllerClass->getAttributes(Controller::class);
             if (empty($controllerAttributes)) {
@@ -119,21 +154,20 @@ class Router
             if ($groupRoute === '') {
                 $routePrefix = '';
             }
+
             foreach ($methodsInController as $method) {
                 $routeAttributes = $method->getAttributes(Route::class);
-                if (empty($routeAttributes)) {
-                    continue;
-                }
-
-                $middlewares = [...$controllerMiddlewares, ...$this->getMiddlewares($method)];
-                foreach ($routeAttributes as $routeAttribute) {
-                    /** @var Route $routeAttributeInstance */
-                    $routeAttributeInstance = $routeAttribute->newInstance();
-                    $middleware = ', [' . implode(',', $middlewares) . ']';
-                    if (!empty($routeAttributeInstance->route)) {
-                        $methods .= '$r->addRoute("' . $routeAttributeInstance->httpMethod->name . '", "' . $routePrefix . $routeAttributeInstance->route . '", ["ctrl", "' . $class . '","' . $method->name . '"' . $middleware . ']);' . PHP_EOL;
-                    } else {
-                        $methods .= '$r->addRoute("' . $routeAttributeInstance->httpMethod->name . '", "", ["ctrl", "' . $class . '","' . $method->name . '"' . $middleware . ']);' . PHP_EOL;
+                if (!empty($routeAttributes)) {
+                    $middlewares = [...$controllerMiddlewares, ...$this->getMiddlewares($method)];
+                    foreach ($routeAttributes as $routeAttribute) {
+                        /** @var Route $routeAttributeInstance */
+                        $routeAttributeInstance = $routeAttribute->newInstance();
+                        $middleware = ', [' . implode(',', $middlewares) . ']';
+                        if (!empty($routeAttributeInstance->route)) {
+                            $methods .= '$r->addRoute("' . $routeAttributeInstance->httpMethod->name . '", "' . $routePrefix . $routeAttributeInstance->route . '", ["ctrl", "' . $class . '","' . $method->name . '"' . $middleware . ']);' . PHP_EOL;
+                        } else {
+                            $methods .= '$r->addRoute("' . $routeAttributeInstance->httpMethod->name . '", "", ["ctrl", "' . $class . '","' . $method->name . '"' . $middleware . ']);' . PHP_EOL;
+                        }
                     }
                 }
             }
@@ -162,28 +196,27 @@ class Router
         $namespace = '';
         $class = '';
 
-        $getting_namespace = false;
-        $getting_class = false;
+        $gettingNamespace = false;
+        $gettingClass = false;
 
         foreach (token_get_all($contents) as $token) {
             if (is_array($token) && $token[0] === T_NAMESPACE) {
-                $getting_namespace = true;
+                $gettingNamespace = true;
             }
 
             if (is_array($token) && $token[0] === T_CLASS) {
-                $getting_class = true;
+                $gettingClass = true;
             }
 
-            // While we're grabbing the namespace name...
-            if ($getting_namespace === true) {
+            if ($gettingNamespace === true) {
                 if (is_array($token) && in_array($token[0], [T_STRING, T_NS_SEPARATOR], true)) {
                     $namespace .= $token[1];
-                } else if ($token === ';') {
-                    $getting_namespace = false;
+                } elseif ($token === ';') {
+                    $gettingNamespace = false;
                 }
             }
 
-            if (($getting_class === true) && is_array($token) && $token[0] === T_STRING) {
+            if (($gettingClass === true) && is_array($token) && $token[0] === T_STRING) {
                 $class = $token[1];
                 break;
             }
@@ -193,22 +226,6 @@ class Router
         $classFqdn = $namespace ? $namespace . '\\' . $class : $class;
 
         return $classFqdn;
-    }
-
-    /**
-     * Prepares the routing table and writes it to the cache file
-     *
-     * @param bool $force Force the generation of the routing table, this will overwrite the current routing table
-     * @return void
-     * @throws ReflectionException
-     */
-    public function prepareRoutingCache(bool $force): void
-    {
-        $cacheFileExists = file_exists($this->cacheFile);
-        if (!$cacheFileExists || $force) {
-            $routingTable = $this->buildTable();
-            file_put_contents($this->cacheFile, $routingTable);
-        }
     }
 
     /**
@@ -244,10 +261,115 @@ class Router
                     }
                 }
 
-                $middlewares[$reflectionClassName] = 'new ' . $reflectionClassName . '(' . implode(',', $parameter) . ')';
+                $middlewares[$reflectionClassName] = 'new ' . $reflectionClassName . '(' . implode(
+                        ',',
+                        $parameter
+                    ) . ')';
             }
         }
 
         return $middlewares;
+    }
+
+    /**
+     * Handles the current request, simply call this function in your router script, and the rest will just work™
+     *
+     * @param string $cacheDirectory The directory the cache file should be written to
+     * @param string $controllerDirectory The directory the controllers reside in
+     * @param ResponseInterface $notFoundResponse
+     * @param Engine|null $engine The template engine to be used by the base controller, if null no template engine will be used
+     * @param Extension ...$extensions The routing table generator extensions to use
+     * @return void
+     * @throws ReflectionException
+     */
+    public static function handle(
+        string $cacheDirectory,
+        string $controllerDirectory,
+        ResponseInterface $notFoundResponse,
+        Engine|null $engine = null,
+        Extension ...$extensions
+    ): void {
+        $router = new Router($cacheDirectory, $controllerDirectory, ...$extensions);
+        $router->prepareRoutingCache();
+
+        $dispatcher = include $router->getCacheFile();
+
+        $routeInfo = $dispatcher->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
+        $app = new MiddlewarePipe();
+        switch ($routeInfo[0]) {
+            case Dispatcher::NOT_FOUND:
+                $app->pipe(
+                    middleware(static fn() => $notFoundResponse)
+                );
+                break;
+            case Dispatcher::METHOD_NOT_ALLOWED:
+                $allowedMethods = implode(',', $routeInfo[1]);
+                $app->pipe(
+                    middleware(static fn() => new Response(405, ['Allow' => $allowedMethods]))
+                );
+                break;
+            case Dispatcher::FOUND:
+                [, $handler, $vars] = $routeInfo;
+                $type = $handler[0];
+                if ($type === 'fn') {
+                    [, $function, $middlewares] = $handler;
+                    if (!empty($middlewares)) {
+                        foreach ($middlewares as $middleware) {
+                            $app->pipe($middleware);
+                        }
+                    }
+
+                    $app->pipe(new FunctionMiddleware($function, $vars));
+                } elseif ($type === 'ctrl') {
+                    [, $controller, $method, $middlewares] = $handler;
+                    if (!empty($middlewares)) {
+                        foreach ($middlewares as $middleware) {
+                            $app->pipe($middleware);
+                        }
+                    }
+
+                    $app->pipe(new ControllerMiddleware($controller, $method, $vars, $engine));
+                }
+                break;
+        }
+
+        $requestHandleRunner = new RequestHandlerRunner(
+            $app,
+            new SapiEmitter(),
+            static function () {
+                return ServerRequestFactory::fromGlobals();
+            },
+            static function (Throwable $e) {
+                $response = (new ResponseFactory())->createResponse(500);
+                $response->getBody()->write(
+                    sprintf(
+                        'An error occurred: %s',
+                        $e->getMessage()
+                    )
+                );
+
+                return $response;
+            }
+        );
+
+        $requestHandleRunner->run();
+    }
+
+    /**
+     * Builds the routing table cache and overwrites the currently active table. This should only be called from CLI commands, since the generation of the table can take some time
+     *
+     * @param string $cacheDirectory The directory the cache file should be written to
+     * @param string $controllerDirectory The directory the controllers reside in
+     * @param Extension ...$extensions The routing table generator extensions to use
+     * @return void
+     * @throws ReflectionException
+     */
+    public static function buildRoutingCache(
+        string $cacheDirectory,
+        string $controllerDirectory,
+        Extension ...$extensions
+    ): void {
+        $router = new Router($cacheDirectory, $controllerDirectory, ...$extensions);
+        $router->prepareRoutingCache(true);
     }
 }

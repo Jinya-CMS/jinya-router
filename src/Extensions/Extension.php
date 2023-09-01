@@ -19,13 +19,14 @@ abstract class Extension
     }
 
     /**
-     * Gets executed after the routing table has been generated. The generated routing table is passed to the function as argument
+     * Gets executed after the routing table has been generated. The generated routing table is passed to the function as argument. The function returns the modified routing table or the original one if no changes were made
      *
      * @param string $generatedTable The generated routing table
-     * @return void
+     * @return string
      */
-    public function afterGeneration(string $generatedTable): void
+    public function afterGeneration(string $generatedTable): string
     {
+        return $generatedTable;
     }
 
     /**

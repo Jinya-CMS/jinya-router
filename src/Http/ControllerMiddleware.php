@@ -7,7 +7,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use ReflectionClass;
 use ReflectionException;
 
 /**
@@ -22,11 +21,15 @@ class ControllerMiddleware implements MiddlewareInterface
      *
      * @param class-string $controller The controller class to use
      * @param string $method The method to call on the class during processing of the request
-     * @param array<mixed> $vars The variables passed to the method during execution
+     * @param array<mixed> $vars The variables are passed to the method during execution
      * @param Engine|null $templateEngine The template engine to be used for the processing of the request
      */
-    public function __construct(private readonly string $controller, private readonly string $method, private readonly array $vars, private readonly Engine|null $templateEngine = null)
-    {
+    public function __construct(
+        private readonly string $controller,
+        private readonly string $method,
+        private readonly array $vars,
+        private readonly Engine|null $templateEngine = null
+    ) {
     }
 
     /**

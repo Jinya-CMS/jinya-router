@@ -30,7 +30,7 @@ class FunctionMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $function = $this->function;
-        if (is_callable($function)) {
+        if (is_callable($function) || (is_string($function) && function_exists($function))) {
             return $function(...$this->vars);
         }
 

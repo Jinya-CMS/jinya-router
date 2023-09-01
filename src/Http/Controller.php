@@ -123,7 +123,10 @@ abstract class Controller
             throw new RuntimeException('No template engine provided');
         }
 
-        return new Response($status, headers: ['Content-Type' => 'text/html'], body: $this->templateEngine->render($template, $data));
+        return new Response($status, headers: ['Content-Type' => 'text/html'], body: $this->templateEngine->render(
+            $template,
+            $data
+        ));
     }
 
     /**
@@ -132,6 +135,7 @@ abstract class Controller
      * @param string $filename The file to send
      * @param int $status The response status defaults to 200. If the file doesn't exist or can't be opened, 404 is returned
      * @return ResponseInterface
+     * @throws JsonException
      */
     public function file(string $filename, int $status = self::HTTP_OK): ResponseInterface
     {
@@ -140,7 +144,9 @@ abstract class Controller
             return $this->notFound();
         }
 
-        return new Response($status, headers: ['Content-Type' => mime_content_type($filename)], body: Stream::create($file));
+        return new Response($status, headers: ['Content-Type' => mime_content_type($filename)], body: Stream::create(
+            $file
+        ));
     }
 
     /**
@@ -169,7 +175,10 @@ abstract class Controller
      */
     public function json(mixed $data, int $status = self::HTTP_OK): ResponseInterface
     {
-        return new Response($status, headers: ['Content-Type' => 'application/json'], body: json_encode($data, JSON_THROW_ON_ERROR));
+        return new Response($status, headers: ['Content-Type' => 'application/json'], body: json_encode(
+            $data,
+            JSON_THROW_ON_ERROR
+        ));
     }
 
     /**

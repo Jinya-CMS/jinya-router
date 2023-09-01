@@ -16,7 +16,9 @@ class Route
      * @param HttpMethod $httpMethod The HTTP method this method is called for
      * @param string $route The route this method is called for
      */
-    public function __construct(public readonly HttpMethod $httpMethod = HttpMethod::GET, public readonly string $route = '')
-    {
+    public function __construct(
+        public readonly HttpMethod $httpMethod = HttpMethod::GET,
+        public readonly string $route = ''
+    ) {
     }
 }
