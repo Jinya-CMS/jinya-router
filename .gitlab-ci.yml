@@ -1,0 +1,34 @@
+stages:
+  - lint
+  - test
+
+pint:
+  image: harbor.ulbricht.casa/jinya/jinya-cms-php-base-test-image:latest
+  stage: lint
+  script:
+    - composer install
+    - ./vendor/bin/pint --test
+
+phpstan:
+  image: harbor.ulbricht.casa/jinya/jinya-cms-php-base-test-image:latest
+  stage: lint
+  script:
+    - composer install
+    - ./vendor/bin/phpstan --no-progress analyze ./src ./tests
+
+phpunit:
+  image: harbor.ulbricht.casa/jinya/jinya-cms-php-base-test-image:latest
+  stage: test
+  script:
+    - composer install
+    - ./vendor/bin/phpunit --log-junit report.xml --configuration ./phpunit.xml --coverage-text --coverage-cobertura=build/coverage.cobertura.xml
+  artifacts:
+    when: always
+    paths:
+      - report.xml
+    reports:
+      junit:
+        - report.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: build/coverage.cobertura.xml

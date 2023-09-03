@@ -23,7 +23,8 @@
   "require-dev": {
     "roave/security-advisories": "dev-latest",
     "phpstan/phpstan": "1.10.32",
-    "phpunit/phpunit": "10.3.2"
+    "phpunit/phpunit": "10.3.2",
+    "laravel/pint": "^1.12"
   },
   "autoload": {
     "psr-4": {
@@ -32,7 +33,10 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Jinya\\Router\\": "tests/"
-    }
+      "Jinya\\Router\\Tests\\": "tests/"
+    },
+    "files": [
+      "tests/functions/functionMiddlewareTestFunctions.php"
+    ]
   }
 }

@@ -7,7 +7,6 @@ namespace Jinya\Router\Extensions;
  */
 abstract class Extension
 {
-
     /**
      * Gets executed before the table is generated. This function allows inspecting the available controllers
      *

@@ -14,7 +14,6 @@ use Psr\Http\Server\RequestHandlerInterface;
  */
 class FunctionMiddleware implements MiddlewareInterface
 {
-
     /**
      * Creates a new instance of the function middleware
      * @param mixed $function The function to call during processing of the request

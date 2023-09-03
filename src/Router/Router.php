@@ -99,7 +99,7 @@ class Router
             $controllerTable . PHP_EOL .
             implode(
                 PHP_EOL,
-                array_map(static fn(Extension $extension) => $extension->additionalRoutes(), $this->extensions)
+                array_map(static fn (Extension $extension) => $extension->additionalRoutes(), $this->extensions)
             ) . PHP_EOL .
             '});';
 
@@ -262,9 +262,9 @@ class Router
                 }
 
                 $middlewares[$reflectionClassName] = 'new ' . $reflectionClassName . '(' . implode(
-                        ',',
-                        $parameter
-                    ) . ')';
+                    ',',
+                    $parameter
+                ) . ')';
             }
         }
 
@@ -299,13 +299,13 @@ class Router
         switch ($routeInfo[0]) {
             case Dispatcher::NOT_FOUND:
                 $app->pipe(
-                    middleware(static fn() => $notFoundResponse)
+                    middleware(static fn () => $notFoundResponse)
                 );
                 break;
             case Dispatcher::METHOD_NOT_ALLOWED:
                 $allowedMethods = implode(',', $routeInfo[1]);
                 $app->pipe(
-                    middleware(static fn() => new Response(405, ['Allow' => $allowedMethods]))
+                    middleware(static fn () => new Response(405, ['Allow' => $allowedMethods]))
                 );
                 break;
             case Dispatcher::FOUND:

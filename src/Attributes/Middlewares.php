@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Attributes;
+namespace Jinya\Router\Attributes;
 
 use Attribute;
 use Psr\Http\Server\MiddlewareInterface;

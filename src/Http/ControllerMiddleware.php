@@ -3,6 +3,7 @@
 namespace Jinya\Router\Http;
 
 use Jinya\Router\Templates\Engine;
+use Nyholm\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -15,7 +16,6 @@ use ReflectionException;
  */
 class ControllerMiddleware implements MiddlewareInterface
 {
-
     /**
      * Creates a new controller middleware instance
      *
@@ -38,6 +38,10 @@ class ControllerMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        if (!class_exists($this->controller) || !method_exists($this->controller, $this->method)) {
+            return new Response(404);
+        }
+
         $controller = $this->controller;
         $controller = new $controller();
         if ($controller instanceof Controller) {
