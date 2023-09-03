@@ -2,11 +2,10 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.3/phpunit.xsd"
          bootstrap="vendor/autoload.php"
-         cacheDirectory=".phpunit.cache"
+         cacheResultFile=".phpunit.cache/test-results"
          executionOrder="depends,defects"
-         requireCoverageMetadata="true"
-         beStrictAboutCoverageMetadata="true"
          beStrictAboutOutputDuringTests="true"
+         beStrictAboutTodoAnnotatedTests="true"
          failOnRisky="true"
          failOnWarning="true">
     <testsuites>
@@ -20,4 +19,12 @@
             <directory>src</directory>
         </include>
     </source>
+
+    <coverage cacheDirectory=".phpunit.cache/code-coverage">
+        <report>
+            <clover outputFile="build/clover.xml"/>
+            <html outputDirectory="build/coverage"/>
+            <cobertura outputFile="build/coverage.cobertura.xml"/>
+        </report>
+    </coverage>
 </phpunit>
