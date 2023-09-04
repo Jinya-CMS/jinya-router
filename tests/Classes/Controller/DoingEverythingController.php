@@ -8,7 +8,11 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class DoingEverythingController extends BaseController
 {
-
+    /**
+     * @param ServerRequestInterface $request
+     * @param array<string, mixed>|object|null $body
+     * @param Engine|null $templateEngine
+     */
     public function __construct(
         ServerRequestInterface $request,
         array|object|null $body,

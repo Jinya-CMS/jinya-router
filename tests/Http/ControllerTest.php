@@ -13,7 +13,6 @@ use function PHPUnit\Framework\assertEquals;
 
 class ControllerTest extends TestCase
 {
-
     private function getController(): DoingEverythingController
     {
         $request = new ServerRequest('GET', 'http://localhost:8080?id=34', ['Accept' => 'application/json']);
