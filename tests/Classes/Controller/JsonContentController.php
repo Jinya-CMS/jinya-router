@@ -10,7 +10,7 @@ use Psr\Http\Message\ResponseInterface;
 #[Controller]
 class JsonContentController extends BaseController
 {
-    #[Route]
+    #[Route(route: 'json/{id}')]
     public function getAction(int $id): ResponseInterface
     {
         return $this->json([

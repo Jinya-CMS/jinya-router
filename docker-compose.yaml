@@ -1,0 +1,9 @@
+version: '3.9'
+
+services:
+  jinya-router:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/var/www/html

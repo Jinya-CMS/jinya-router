@@ -139,6 +139,10 @@ abstract class Controller
      */
     public function file(string $filename, int $status = self::HTTP_OK): ResponseInterface
     {
+        if (!file_exists($filename)) {
+            return $this->notFound();
+        }
+
         $file = fopen($filename, "rb+");
         if (!$file) {
             return $this->notFound();

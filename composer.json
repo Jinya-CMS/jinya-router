@@ -21,6 +21,7 @@
     "nyholm/psr7-server": "^1.0.2"
   },
   "require-dev": {
+    "ext-xdebug": "*",
     "roave/security-advisories": "dev-latest",
     "phpstan/phpstan": "1.10.32",
     "phpunit/phpunit": "10.3.2",

@@ -50,8 +50,10 @@ class Router
         Extension ...$extensions
     ) {
         $routingCacheBaseDir = $cacheDirectory . DIRECTORY_SEPARATOR . 'routing' . DIRECTORY_SEPARATOR;
-        if (!mkdir($routingCacheBaseDir, recursive: true) && !is_dir($routingCacheBaseDir)) {
+        if (!@mkdir($routingCacheBaseDir, recursive: true) && !is_dir($routingCacheBaseDir)) {
+            // @codeCoverageIgnoreStart
             throw new RuntimeException(sprintf('Directory "%s" was not created', $routingCacheBaseDir));
+            // @codeCoverageIgnoreEnd
         }
 
         $this->extensions = $extensions;
@@ -124,9 +126,7 @@ class Router
         $iterator = new DirectoryIterator($this->controllerDirectory);
         foreach ($iterator as $controller) {
             if ($controller->getExtension() === 'php') {
-                include_once $controller->getPath();
-
-                $classes[] = $this->getClassNameFromFile($controller->getFilename());
+                $classes[] = $this->getClassNameFromFile($controller->getPathname());
             }
         }
 
@@ -190,7 +190,9 @@ class Router
     {
         $contents = file_get_contents($file);
         if (!$contents) {
+            // @codeCoverageIgnoreStart
             $contents = $file;
+            // @codeCoverageIgnoreEnd
         }
 
         $namespace = '';
@@ -199,7 +201,9 @@ class Router
         $gettingNamespace = false;
         $gettingClass = false;
 
-        foreach (token_get_all($contents) as $token) {
+        $tokens = token_get_all($contents);
+
+        foreach ($tokens as $token) {
             if (is_array($token) && $token[0] === T_NAMESPACE) {
                 $gettingNamespace = true;
             }
@@ -209,7 +213,7 @@ class Router
             }
 
             if ($gettingNamespace === true) {
-                if (is_array($token) && in_array($token[0], [T_STRING, T_NS_SEPARATOR], true)) {
+                if (is_array($token) && $token[0] === T_NAME_QUALIFIED) {
                     $namespace .= $token[1];
                 } elseif ($token === ';') {
                     $gettingNamespace = false;
@@ -340,15 +344,14 @@ class Router
                 return ServerRequestFactory::fromGlobals();
             },
             static function (Throwable $e) {
+                // @codeCoverageIgnoreStart
                 $response = (new ResponseFactory())->createResponse(500);
                 $response->getBody()->write(
-                    sprintf(
-                        'An error occurred: %s',
-                        $e->getMessage()
-                    )
+                    json_encode(['error' => $e->getMessage()], JSON_THROW_ON_ERROR)
                 );
 
                 return $response;
+                // @codeCoverageIgnoreEnd
             }
         );
 

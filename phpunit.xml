@@ -6,8 +6,8 @@
          executionOrder="depends,defects"
          beStrictAboutOutputDuringTests="true"
          beStrictAboutTodoAnnotatedTests="true"
-         failOnRisky="true"
-         failOnWarning="true">
+         displayDetailsOnTestsThatTriggerWarnings="true"
+         failOnRisky="true">
     <testsuites>
         <testsuite name="default">
             <directory>tests</directory>

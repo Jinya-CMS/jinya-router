@@ -20,6 +20,7 @@ phpunit:
   image: harbor.ulbricht.casa/jinya/jinya-cms-php-base-test-image:latest
   stage: test
   script:
+    - install-php-extensions xdebug
     - composer install
     - ./vendor/bin/phpunit --log-junit report.xml --configuration ./phpunit.xml --coverage-text --coverage-cobertura=build/coverage.cobertura.xml
   artifacts:
