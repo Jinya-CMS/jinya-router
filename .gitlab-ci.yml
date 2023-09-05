@@ -6,6 +6,7 @@ pint:
   image: harbor.ulbricht.casa/jinya/jinya-cms-php-base-test-image:latest
   stage: lint
   script:
+    - install-php-extensions xdebug
     - composer install
     - ./vendor/bin/pint --test
 
@@ -13,6 +14,7 @@ phpstan:
   image: harbor.ulbricht.casa/jinya/jinya-cms-php-base-test-image:latest
   stage: lint
   script:
+    - install-php-extensions xdebug
     - composer install
     - ./vendor/bin/phpstan --no-progress analyze ./src ./tests
 
