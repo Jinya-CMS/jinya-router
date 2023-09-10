@@ -145,7 +145,9 @@ abstract class Controller
 
         $file = fopen($filename, "rb+");
         if (!$file) {
+            // @codeCoverageIgnoreStart
             return $this->notFound();
+            // @codeCoverageIgnoreEnd
         }
 
         return new Response($status, headers: ['Content-Type' => mime_content_type($filename)], body: Stream::create(

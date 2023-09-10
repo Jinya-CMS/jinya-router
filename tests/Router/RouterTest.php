@@ -6,6 +6,7 @@ use FastRoute\Dispatcher;
 use Jinya\Router\Router\Router;
 use Jinya\Router\Tests\Classes\Controller\JsonContentController;
 use Jinya\Router\Tests\Classes\Controller\NoContentController;
+use Jinya\Router\Tests\Classes\Middleware\AddHeaderMiddleware;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 use UnexpectedValueException;
@@ -37,6 +38,8 @@ class RouterTest extends TestCase
         $headers = xdebug_get_headers();
         self::assertNotEmpty($headers);
         self::assertContains('Content-Type: application/json', $headers);
+        self::assertContains('TestHeader: X-Test', $headers);
+        self::assertContains('TestHeader2: X-Test', $headers);
     }
 
     public function testHandleNotFound(): void
@@ -96,14 +99,14 @@ class RouterTest extends TestCase
         $dispatchJsonResult = $routingTable->dispatch('GET', '/json/5');
         self::assertEquals(Dispatcher::FOUND, $dispatchJsonResult[0]);
         self::assertEquals(
-            ['ctrl', JsonContentController::class, 'getAction', []],
+            ['ctrl', JsonContentController::class, 'getAction', [new AddHeaderMiddleware('TestHeader2'), new AddHeaderMiddleware()]],
             $dispatchJsonResult[1]
         );
 
         $dispatchNoContentResult = $routingTable->dispatch('GET', '/no-content');
         self::assertEquals(Dispatcher::FOUND, $dispatchNoContentResult[0]);
         self::assertEquals(
-            ['ctrl', NoContentController::class, 'getAction', []],
+            ['ctrl', NoContentController::class, 'getAction', [new AddHeaderMiddleware('TestHeader2', 2)]],
             $dispatchNoContentResult[1]
         );
     }

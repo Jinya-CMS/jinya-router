@@ -5,6 +5,7 @@ namespace Jinya\Router\Router;
 use DirectoryIterator;
 use FastRoute\Dispatcher;
 use Jinya\Router\Attributes\Controller;
+use Jinya\Router\Attributes\Middlewares;
 use Jinya\Router\Attributes\Route;
 use Jinya\Router\Extensions\Extension;
 use Jinya\Router\Http\ControllerMiddleware;
@@ -236,39 +237,42 @@ class Router
      * Gets the middlewares used for the given method or class
      *
      * @param ReflectionClass|ReflectionMethod $methodOrClass The class or method to get the middlewares for
-     * @return array<string, string>
+     * @return string[]
      * @throws ReflectionException
      */
     private function getMiddlewares(ReflectionClass|ReflectionMethod $methodOrClass): array
     {
         $middlewares = [];
-        $middlewareAttributes = $methodOrClass->getAttributes();
+        $middlewareAttributes = $methodOrClass->getAttributes(Middlewares::class);
         foreach ($middlewareAttributes as $middlewareAttribute) {
-            $reflectionClassName = $middlewareAttribute->getName();
+            /** @var Middlewares $methodMiddlewareAttributeInstance */
             $methodMiddlewareAttributeInstance = $middlewareAttribute->newInstance();
-            $middlewareAttributeReflectionClass = new ReflectionClass($reflectionClassName);
-            if ($middlewareAttributeReflectionClass->implementsInterface(MiddlewareInterface::class)) {
-                $ctor = $middlewareAttributeReflectionClass->getConstructor();
-                $parameter = [];
-                if ($ctor) {
-                    $ctorParams = $ctor->getParameters();
-                    foreach ($ctorParams as $ctorParam) {
-                        if ($middlewareAttributeReflectionClass->hasProperty($ctorParam->name)) {
-                            $prop = $middlewareAttributeReflectionClass->getProperty($ctorParam->name);
-                            $val = $prop->getValue($methodMiddlewareAttributeInstance);
-                            if (is_string($val)) {
-                                $parameter[] = "'$val'";
-                            } else {
-                                $parameter[] = $val;
+            foreach ($methodMiddlewareAttributeInstance->middlewares as $middleware) {
+                $middlewareReflectionClass = new ReflectionClass($middleware);
+                if ($middlewareReflectionClass->implementsInterface(MiddlewareInterface::class)) {
+                    $ctor = $middlewareReflectionClass->getConstructor();
+                    $parameter = [];
+                    if ($ctor) {
+                        $ctorParams = $ctor->getParameters();
+                        foreach ($ctorParams as $ctorParam) {
+                            if ($middlewareReflectionClass->hasProperty($ctorParam->name)) {
+                                $prop = $middlewareReflectionClass->getProperty($ctorParam->name);
+                                $val = $prop->getValue($middleware);
+                                if (is_string($val)) {
+                                    $parameter[] = "'$val'";
+                                } else {
+                                    $parameter[] = $val;
+                                }
                             }
                         }
                     }
-                }
 
-                $middlewares[$reflectionClassName] = 'new ' . $reflectionClassName . '(' . implode(
-                    ',',
-                    $parameter
-                ) . ')';
+                    $reflectionClassName = $middlewareReflectionClass->getName();
+                    $middlewares[] = 'new ' . $reflectionClassName . '(' . implode(
+                        ',',
+                        $parameter
+                    ) . ')';
+                }
             }
         }
 

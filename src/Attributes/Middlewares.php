@@ -8,7 +8,7 @@ use Psr\Http\Server\MiddlewareInterface;
 /**
  * Declares the middlewares to be used with the given route
  */
-#[Attribute(Attribute::TARGET_METHOD)]
+#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_CLASS)]
 class Middlewares
 {
     /** @var MiddlewareInterface[] The middlewares to execute with this method */
