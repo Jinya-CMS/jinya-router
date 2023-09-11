@@ -5,6 +5,7 @@ namespace Jinya\Router\Extensions;
 /**
  * Base class for Jinya Router extensions. With extensions, it is possible to extend the behavior and the generation of the routing table
  */
+/** @codeCoverageIgnore */
 abstract class Extension
 {
     /**

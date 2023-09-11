@@ -35,3 +35,4 @@ composer.phar
 /app/phpunit.xml
 /phpunit.xml
 /build/
+tests/var

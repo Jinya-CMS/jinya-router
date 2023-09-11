@@ -6,6 +6,7 @@ use FastRoute\Dispatcher;
 use Jinya\Router\Router\Router;
 use Jinya\Router\Tests\Classes\Controller\JsonContentController;
 use Jinya\Router\Tests\Classes\Controller\NoContentController;
+use Jinya\Router\Tests\Classes\Extension\SimpleExtension;
 use Jinya\Router\Tests\Classes\Middleware\AddHeaderMiddleware;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\TestCase;
@@ -40,6 +41,47 @@ class RouterTest extends TestCase
         self::assertContains('Content-Type: application/json', $headers);
         self::assertContains('TestHeader: X-Test', $headers);
         self::assertContains('TestHeader2: X-Test', $headers);
+    }
+
+    public function testHandleWithExtension(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/hello-world';
+        ob_start();
+        Router::handle(
+            __DIR__ . '/../var/cache',
+            __DIR__ . '/../Classes/Controller',
+            new Response(404, ['Content-Type' => 'test/not-found']),
+            null,
+            new SimpleExtension()
+        );
+
+        ob_get_clean();
+
+        $headers = xdebug_get_headers();
+        self::assertNotEmpty($headers);
+        self::assertContains('Content-Type: application/json', $headers);
+    }
+
+    public function testHandleWithExtensionAndMiddleware(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/hello-world-middleware';
+        ob_start();
+        Router::handle(
+            __DIR__ . '/../var/cache',
+            __DIR__ . '/../Classes/Controller',
+            new Response(404, ['Content-Type' => 'test/not-found']),
+            null,
+            new SimpleExtension()
+        );
+
+        ob_get_clean();
+
+        $headers = xdebug_get_headers();
+        self::assertNotEmpty($headers);
+        self::assertContains('TestHeader: X-Test', $headers);
+        self::assertContains('Content-Type: application/json', $headers);
     }
 
     public function testHandleNotFound(): void
@@ -99,7 +141,12 @@ class RouterTest extends TestCase
         $dispatchJsonResult = $routingTable->dispatch('GET', '/json/5');
         self::assertEquals(Dispatcher::FOUND, $dispatchJsonResult[0]);
         self::assertEquals(
-            ['ctrl', JsonContentController::class, 'getAction', [new AddHeaderMiddleware('TestHeader2'), new AddHeaderMiddleware()]],
+            [
+                'ctrl',
+                JsonContentController::class,
+                'getAction',
+                [new AddHeaderMiddleware('TestHeader2'), new AddHeaderMiddleware()]
+            ],
             $dispatchJsonResult[1]
         );
 
