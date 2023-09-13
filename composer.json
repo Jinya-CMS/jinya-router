@@ -1,6 +1,6 @@
 {
   "name": "jinya/router",
-  "description": "A simple attribute based routing library",
+  "description": "A simple attribute-based routing library",
   "license": "MIT",
   "authors": [
     {
@@ -30,7 +30,11 @@
   "autoload": {
     "psr-4": {
       "Jinya\\Router\\": "src/"
-    }
+    },
+    "files": [
+      "src/handle.php",
+      "src/build.php"
+    ]
   },
   "autoload-dev": {
     "psr-4": {

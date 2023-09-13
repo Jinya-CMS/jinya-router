@@ -44,7 +44,7 @@ class ControllerMiddleware implements MiddlewareInterface
 
         $controller = $this->controller;
         $controller = new $controller();
-        if ($controller instanceof Controller) {
+        if ($controller instanceof AbstractController) {
             $controller->request = $request;
             $controller->body = $request->getParsedBody();
             $controller->templateEngine = $this->templateEngine;

@@ -36,3 +36,5 @@ composer.phar
 /phpunit.xml
 /build/
 tests/var
+/examples/*/var/
+/examples/*/vendor/

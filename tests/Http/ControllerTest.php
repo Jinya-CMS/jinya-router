@@ -2,7 +2,7 @@
 
 namespace Jinya\Router\Tests\Http;
 
-use Jinya\Router\Http\Controller;
+use Jinya\Router\Http\AbstractController;
 use Jinya\Router\Tests\Classes\Controller\DoingEverythingController;
 use Jinya\Router\Tests\Classes\Templates\DoNothingTemplateEngine;
 use Nyholm\Psr7\ServerRequest;
@@ -42,7 +42,7 @@ class ControllerTest extends TestCase
 
     public function testRenderActionDifferentResponseStatus(): void
     {
-        $response = $this->getController()->render('template', [], Controller::HTTP_BAD_REQUEST);
+        $response = $this->getController()->render('template', [], AbstractController::HTTP_BAD_REQUEST);
         $response->getBody()->rewind();
 
         self::assertEquals(400, $response->getStatusCode());
@@ -79,7 +79,7 @@ class ControllerTest extends TestCase
 
     public function testJsonActionDifferentResponseStatus(): void
     {
-        $response = $this->getController()->json(['message' => '400'], Controller::HTTP_BAD_REQUEST);
+        $response = $this->getController()->json(['message' => '400'], AbstractController::HTTP_BAD_REQUEST);
         $response->getBody()->rewind();
 
         self::assertEquals(400, $response->getStatusCode());
@@ -101,7 +101,7 @@ class ControllerTest extends TestCase
 
     public function testFileActionDifferentResponseStatus(): void
     {
-        $response = $this->getController()->file(__FILE__, Controller::HTTP_BAD_REQUEST);
+        $response = $this->getController()->file(__FILE__, AbstractController::HTTP_BAD_REQUEST);
         $response->getBody()->rewind();
 
         self::assertEquals(400, $response->getStatusCode());
@@ -111,7 +111,7 @@ class ControllerTest extends TestCase
 
     public function testFileActionNotFound(): void
     {
-        $response = $this->getController()->file(__FILE__ . 'NotExisting', Controller::HTTP_BAD_REQUEST);
+        $response = $this->getController()->file(__FILE__ . 'NotExisting', AbstractController::HTTP_BAD_REQUEST);
         $response->getBody()->rewind();
 
         self::assertEquals(404, $response->getStatusCode());

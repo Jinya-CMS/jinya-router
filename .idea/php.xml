@@ -61,6 +61,21 @@
       <path value="$PROJECT_DIR$/vendor/fig/http-message-util" />
       <path value="$PROJECT_DIR$/vendor/nikic/fast-route" />
       <path value="$PROJECT_DIR$/vendor/laravel/pint" />
+      <path value="$PROJECT_DIR$/examples/SimpleExample/vendor/laminas/laminas-httphandlerrunner" />
+      <path value="$PROJECT_DIR$/examples/SimpleExample/vendor/nyholm/psr7-server" />
+      <path value="$PROJECT_DIR$/examples/SimpleExample/vendor/laminas/laminas-diactoros" />
+      <path value="$PROJECT_DIR$/examples/SimpleExample/vendor/nyholm/psr7" />
+      <path value="$PROJECT_DIR$/examples/SimpleExample/vendor/laminas/laminas-stratigility" />
+      <path value="$PROJECT_DIR$/examples/SimpleExample/vendor/laminas/laminas-escaper" />
+      <path value="$PROJECT_DIR$/examples/SimpleExample/vendor/psr/http-factory" />
+      <path value="$PROJECT_DIR$/examples/SimpleExample/vendor/psr/http-message" />
+      <path value="$PROJECT_DIR$/examples/SimpleExample/vendor/psr/http-server-middleware" />
+      <path value="$PROJECT_DIR$/examples/SimpleExample/vendor/psr/http-server-handler" />
+      <path value="$PROJECT_DIR$/examples/SimpleExample/vendor/jinya/router" />
+      <path value="$PROJECT_DIR$/examples/SimpleExample/vendor/nikic/fast-route" />
+      <path value="$PROJECT_DIR$/examples/SimpleExample/vendor/composer" />
+      <path value="$PROJECT_DIR$/examples/SimpleExample/vendor/jetbrains/phpstorm-attributes" />
+      <path value="$PROJECT_DIR$/examples/SimpleExample/vendor/fig/http-message-util" />
     </include_path>
   </component>
   <component name="PhpInterpreters">

@@ -1,0 +1,27 @@
+{
+  "name": "jinya/router-controller-without-base-class-example",
+  "description": "An example containing a controller that doesn't use the base class",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Imanuel Ulbricht",
+      "email": "imanuel.ulbricht@jinya.de"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../../"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "php": "^8.2",
+    "jinya/router": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  }
+}

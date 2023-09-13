@@ -2,11 +2,11 @@
 
 namespace Jinya\Router\Tests\Classes\Controller;
 
-use Jinya\Router\Http\Controller as BaseController;
+use Jinya\Router\Http\AbstractController;
 use Jinya\Router\Templates\Engine;
 use Psr\Http\Message\ServerRequestInterface;
 
-class DoingEverythingController extends BaseController
+class DoingEverythingController extends AbstractController
 {
     /**
      * @param ServerRequestInterface $request

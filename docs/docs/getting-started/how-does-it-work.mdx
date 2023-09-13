@@ -1,0 +1,70 @@
+---
+sidebar_position: 3
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# How does it work
+
+You might be wondering what Jinya Router does in the background. This is easy to answer. At first, a cache file is
+generated if it doesn't exist. If it exists, this step is skipped. Then the request gets handled based on the cache
+file.
+
+## Creating the cache
+
+To create the cache, the given controller directory, in our case `__DIR__ . '/../src/App/Controller'`, is scanned for
+php files. Then every php file in that directory is read and checked for classes with the php integrated tokenizer.
+After the tokenizer did its job, the class gets autoloaded and via reflection analyzed. If the class has
+the `Controller` attribute, then the class is identified as controller and the methods get parsed. For every method that
+has a `Route` attribute a routing entry will be created. After analyzing all files in the directory, a cache file
+containing a FastRoute based dispatcher is created and written to the cache directory. In our case the cache directory
+resides in `__DIR__ . '/../var/cache'`.
+
+This is how the cache file from our example looks like, first formatted and for the brave ones, unformatted
+
+<Tabs>
+  <TabItem groupId="formatting" value="formatted" label="Formatted" default>
+
+~~~php title="var/cache/routing/jinya-router.php"
+<?php
+return \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $r) {
+        $r->addGroup("/", function (\FastRoute\RouteCollector $r) {
+        $r->addRoute("POST", "", ["ctrl", "App\Controller\ExampleController", "postAction", []]);
+    });
+});
+~~~
+
+  </TabItem>
+  <TabItem groupId="formatting" value="unformatted" label="Unformatted">
+
+~~~php title="var/cache/routing/jinya-router.php"
+<?php
+return \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $r) {
+$r->addGroup("/", function (\FastRoute\RouteCollector $r) {
+$r->addRoute("POST", "", ["ctrl", "App\Controller\ExampleController","postAction", []]);
+
+});
+
+
+});
+~~~
+
+  </TabItem>
+</Tabs>
+
+## Handling the request
+
+:::tip
+
+If you want to use your own request handler, you can. Simply generate the routing table and use the generated Dispatcher yourself.
+
+Generating the routing table is as easy as calling the function `Jinya\Router\build_routing_table`
+
+:::
+
+After the cache file was created successfully, it will be included by php and the `Dispatcher` is executed. Based on the result of the execution, a Laminas middleware pipe is generated and executed. If the `Dispatcher` returns a not found response, the PSR-7 Response passed to the function is returned instead.
+
+## The response
+
+By default Jinya Router uses Laminas Handle Runner to generate the response and directly echos it into the response SAPI stream. So no further action is needed from your side.

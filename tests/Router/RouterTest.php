@@ -3,7 +3,6 @@
 namespace Jinya\Router\Tests\Router;
 
 use FastRoute\Dispatcher;
-use Jinya\Router\Router\Router;
 use Jinya\Router\Tests\Classes\Controller\JsonContentController;
 use Jinya\Router\Tests\Classes\Controller\NoContentController;
 use Jinya\Router\Tests\Classes\Extension\SimpleExtension;
@@ -12,6 +11,8 @@ use Nyholm\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 use UnexpectedValueException;
 
+use function Jinya\Router\build_routing_table;
+use function Jinya\Router\handle_request;
 use function PHPUnit\Framework\assertInstanceOf;
 
 class RouterTest extends TestCase
@@ -27,7 +28,7 @@ class RouterTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_SERVER['REQUEST_URI'] = '/json/5';
         ob_start();
-        Router::handle(
+        handle_request(
             __DIR__ . '/../var/cache',
             __DIR__ . '/../Classes/Controller',
             new Response(404, ['Content-Type' => 'test/not-found'])
@@ -48,7 +49,7 @@ class RouterTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_SERVER['REQUEST_URI'] = '/hello-world';
         ob_start();
-        Router::handle(
+        handle_request(
             __DIR__ . '/../var/cache',
             __DIR__ . '/../Classes/Controller',
             new Response(404, ['Content-Type' => 'test/not-found']),
@@ -68,7 +69,7 @@ class RouterTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_SERVER['REQUEST_URI'] = '/hello-world-middleware';
         ob_start();
-        Router::handle(
+        handle_request(
             __DIR__ . '/../var/cache',
             __DIR__ . '/../Classes/Controller',
             new Response(404, ['Content-Type' => 'test/not-found']),
@@ -89,7 +90,7 @@ class RouterTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_SERVER['REQUEST_URI'] = '/not-found';
         ob_start();
-        Router::handle(
+        handle_request(
             __DIR__ . '/../var/cache',
             __DIR__ . '/../Classes/Controller',
             new Response(404, ['Content-Type' => 'test/not-found'])
@@ -108,7 +109,7 @@ class RouterTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'PUT';
         $_SERVER['REQUEST_URI'] = '/json/5';
         ob_start();
-        Router::handle(
+        handle_request(
             __DIR__ . '/../var/cache',
             __DIR__ . '/../Classes/Controller',
             new Response(404, ['Content-Type' => 'test/not-found'])
@@ -124,7 +125,7 @@ class RouterTest extends TestCase
 
     public function testBuildRoutingCache(): void
     {
-        Router::buildRoutingCache(__DIR__ . '/../var/cache', __DIR__ . '/../Classes/Controller');
+        build_routing_table(__DIR__ . '/../var/cache', __DIR__ . '/../Classes/Controller');
 
         self::assertFileExists(__DIR__ . '/../var/cache/routing/jinya-router.php');
 
@@ -161,12 +162,12 @@ class RouterTest extends TestCase
     public function testBuildRoutingCacheNonExistingDir(): void
     {
         $this->expectException(UnexpectedValueException::class);
-        Router::buildRoutingCache(__DIR__ . '/../var/cache', __DIR__ . '/../Classes/Controllers');
+        build_routing_table(__DIR__ . '/../var/cache', __DIR__ . '/../Classes/Controllers');
     }
 
     public function testBuildRoutingCacheNoControllersInDir(): void
     {
-        Router::buildRoutingCache(__DIR__ . '/../var/cache', __DIR__ . '/../Classes/Templates');
+        build_routing_table(__DIR__ . '/../var/cache', __DIR__ . '/../Classes/Templates');
 
         /** @var Dispatcher $routingTable */
         $routingTable = include __DIR__ . '/../var/cache/routing/jinya-router.php';

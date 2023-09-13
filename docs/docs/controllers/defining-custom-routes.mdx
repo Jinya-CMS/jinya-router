@@ -1,0 +1,244 @@
+---
+sidebar_position: 2
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Defining custom routes
+
+Usually there are multiple routes in one app, like an API and an admin page. With Jinya Router you can easily map that
+without writing a routing table.
+
+For our example, we will have an API for our user management and an admin page which simply returns an HTML file. The
+admin page is supposed to work as a catch-all route, since our admin page is a modern SPA. If the file exists, we will
+send the file; otherwise just the index.html file is returned.
+
+Let's look at the code.
+
+<Tabs>
+  <TabItem default value="admin-controller" label="AdminController.php">
+
+~~~php showLineNumbers
+<?php
+
+namespace App\Controller;
+
+use Jinya\Router\Attributes\Controller;
+use Jinya\Router\Attributes\Route;
+use Jinya\Router\Http\Controller as BaseController;
+use Psr\Http\Message\ResponseInterface;
+
+#[Controller]
+class AdminController extends BaseController
+{
+    #[Route(route: '{route:.*}')]
+    public function indexAction(string $route): ResponseInterface
+    {
+        if (is_file(__DIR__ . '/' . $route)) {
+             return $this->file(__DIR__ . '/' . $route);
+        }
+
+        return $this->file(__DIR__ . '/index.html');
+    }
+}
+~~~
+
+  </TabItem>
+  <TabItem value="user-controller" label="UserController.php">
+
+~~~php showLineNumbers
+<?php
+
+namespace App\Controller;
+
+use Jinya\Router\Attributes\Controller;
+use Jinya\Router\Attributes\HttpMethod;
+use Jinya\Router\Attributes\Route;
+use Jinya\Router\Http\Controller as BaseController;
+use Psr\Http\Message\ResponseInterface;
+
+#[Controller('api/user')]
+class UserController extends BaseController
+{
+    #[Route]
+    public function getUserListAction(): ResponseInterface
+    {
+        return $this->json([
+            [
+                'id' => 1,
+                'username' => 'john.doe',
+                'firstname' => 'John',
+                'lastname' => 'Doe',
+            ],
+            [
+                'id' => 2,
+                'username' => 'jane.doe',
+                'firstname' => 'Jane',
+                'lastname' => 'Doe'
+            ],
+        ]);
+    }
+
+    #[Route(route: '{id}')]
+    public function getUserByIdAction(int $id): ResponseInterface
+    {
+         return $this->json([
+             'id' => $id,
+             'username' => 'jane.doe',
+             'firstname' => 'Jane',
+             'lastname' => 'Doe'
+         ]);
+    }
+
+    #[Route(httpMethod: HttpMethod::POST)]
+    public function createUserAction(): ResponseInterface
+    {
+        return $this->json([
+            'id' => random_int(0, 100),
+            'username' => $this->body['username'],
+            'firstname' => $this->body['firstname'],
+            'lastname' => $this->body['lastname']
+        ], self::HTTP_CREATED);
+    }
+
+    #[Route(httpMethod: HttpMethod::PUT, route: '{id}')]
+    public function updateUserAction(int $id): ResponseInterface
+    {
+        // Do the update
+        return $this->noContent();
+    }
+
+    #[Route(httpMethod: HttpMethod::DELETE, route: '{id}')]
+    public function deleteUserAction(int $id): ResponseInterface
+    {
+        // Do the delete
+        return $this->noContent();
+    }
+}
+~~~
+
+  </TabItem>
+</Tabs>
+
+## The AdminController
+
+The admin controller is rather simple. The key parts are highlighted below.
+
+~~~php {10,11,13,14,17,20} showLineNumbers
+<?php
+
+namespace App\Controller;
+
+use Jinya\Router\Attributes\Controller;
+use Jinya\Router\Attributes\Route;
+use Jinya\Router\Http\Controller as BaseController;
+use Psr\Http\Message\ResponseInterface;
+
+#[Controller]
+class AdminController extends BaseController
+{
+    #[Route(route: '{route:.*}')]
+    public function indexAction(string $route): ResponseInterface
+    {
+        if (is_file(__DIR__ . '/' . $route)) {
+          return $this->file(__DIR__ . '/' . $route);
+        }
+
+        return $this->file(__DIR__ . '/index.html');
+    }
+}
+~~~
+
+At first the controller is marked as a routable controller on line 10. The next line has the base class of the new controller, the `AbstractController`. The `AbstractController` contains a few helpers that will make your life easier developing with Jinya Router. We will dive into that a bit later.
+
+On line 13 we define our catch-all route. The route itself works with the known `Route` attribute. To define a path the route should react on, simply add the route parameter to the attribute. The route matching works with [`nikic/fast-route`](https://github.com/nikic/FastRoute). You simply wrap the variable name you want to use with curly braces and, optionally, add a regex behind it that defines its format. The delimiter is a colon. To find out more about the way FastRoute handles route matching, click the link.
+
+The request handler of Jinya Router automatically injects the passed route parameters into your function. If you have a route parameter defined that is not a parameter of your function, an exception will be thrown.
+
+On line 16 we check if the file exists and if it exists we use the `$this->file` helper to return the file and automatically set its corresponding content type header. If it doesn't exist we return the index.html file instead.
+
+## The UserController
+
+~~~php {11,17,33,34,44,52,55,59,62} showLineNumbers
+<?php
+
+namespace App\Controller;
+
+use Jinya\Router\Attributes\Controller;
+use Jinya\Router\Attributes\HttpMethod;
+use Jinya\Router\Attributes\Route;
+use Jinya\Router\Http\Controller as BaseController;
+use Psr\Http\Message\ResponseInterface;
+
+#[Controller('api/user')]
+class UserController extends BaseController
+{
+    #[Route]
+    public function getUserListAction(): ResponseInterface
+    {
+        return $this->json([
+            [
+                'id' => 1,
+                'username' => 'john.doe',
+                'firstname' => 'John',
+                'lastname' => 'Doe',
+            ],
+            [
+                'id' => 2,
+                'username' => 'jane.doe',
+                'firstname' => 'Jane',
+                'lastname' => 'Doe'
+            ],
+        ]);
+    }
+
+    #[Route(route: '{id}')]
+    public function getUserByIdAction(int $id): ResponseInterface
+    {
+         return $this->json([
+             'id' => $id,
+             'username' => 'jane.doe',
+             'firstname' => 'Jane',
+             'lastname' => 'Doe'
+         ]);
+    }
+
+    #[Route(httpMethod: HttpMethod::POST)]
+    public function createUserAction(): ResponseInterface
+    {
+        return $this->json([
+            'id' => random_int(0, 100),
+            'username' => $this->body['username'],
+            'firstname' => $this->body['firstname'],
+            'lastname' => $this->body['lastname']
+        ], self::HTTP_CREATED);
+    }
+
+    #[Route(httpMethod: HttpMethod::PUT, route: '{id}')]
+    public function updateUserAction(int $id): ResponseInterface
+    {
+        // Do the update
+        return $this->noContent();
+    }
+
+    #[Route(httpMethod: HttpMethod::DELETE, route: '{id}')]
+    public function deleteUserAction(int $id): ResponseInterface
+    {
+        // Do the delete
+        return $this->noContent();
+    }
+}
+~~~
+
+This controller contains a bit more code. Let's start with line 11. The controller attribute contains the base path, every route defined in the class will be prefixed with the given base path. That means, that the function `getUserListAction` will react to the path `/api/user`, while the function `getUserByIdAction` will react on `/api/user/1`.
+
+Line 17 returns a json encoded object based on the given php array. Internally the json function simply calls `json_encode` and can therefore be filled with any object that allows json encoding.
+
+On line 33 the route contains an id as parameter. The value will be automatically converted to int on passing it down to the function. A line below you can see the int being passed as parameter to the function. This automatic conversion only works for string, int and float values.
+
+By default, Jinya Router treats all routes as `GET` routes. You can change this behavior on per-route bases using the `httpMethod` property of the `Route` attribute. The `httpMethod` accepts a value of the enum type `HttpMethod`. Currently, the enum has values for `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD` and `OPTIONS`.
+
+Line 55 combines the route and the httpMethod parameter to create a PUT route. This route gets the id from the path and only reacts to PUT requests.
+
+Last but not least, let's jump up three lines. On line 52, the result of the post-request gets a custom response code. The `AbstractController` defines consts for all available http status codes as helper.

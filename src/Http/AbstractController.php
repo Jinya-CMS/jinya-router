@@ -13,7 +13,7 @@ use RuntimeException;
 /**
  * A class that can be used as a base controller for classes marked with the Controller attribute.
  */
-abstract class Controller
+abstract class AbstractController
 {
     public const HTTP_CONTINUE = 100;
     public const HTTP_SWITCHING_PROTOCOLS = 101;

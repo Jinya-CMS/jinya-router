@@ -35,3 +35,17 @@ phpunit:
       coverage_report:
         coverage_format: cobertura
         path: build/coverage.cobertura.xml
+
+pages:
+  image: harbor.ulbricht.casa/proxy/library/node:latest
+  stage: deploy
+  script:
+    - cd docs
+    - npm install
+    - npm run build
+    - mv ./build ../public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_TAG
