@@ -23,7 +23,7 @@
   "require-dev": {
     "ext-xdebug": "*",
     "roave/security-advisories": "dev-latest",
-    "phpstan/phpstan": "1.10.32",
+    "phpstan/phpstan": "1.10.34",
     "phpunit/phpunit": "10.3.2",
     "laravel/pint": "1.13.1"
   },
