@@ -4,8 +4,6 @@ namespace Jinya\Router;
 
 use Jinya\Router\Extensions\Extension;
 use Jinya\Router\Router\Router;
-use Jinya\Router\Templates\Engine;
-use Psr\Http\Message\ResponseInterface;
 use ReflectionException;
 
 /**
