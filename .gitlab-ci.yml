@@ -28,7 +28,7 @@ phpstan:
   image: harbor.ulbricht.casa/jinya/jinya-cms-php-base-test-image:latest
   stage: lint
   script:
-    - ./tools/phpstan --no-progress analyze ./src ./tests
+    - ./tools/phpstan --no-progress analyze ./src ./tests --memory-limit=2048M
 
 phpunit:
   extends:
