@@ -2,7 +2,7 @@
   variables:
     PHP_MEMORY_LIMIT: "2048M"
   image:
-    name: harbor.ulbricht.casa/jinya/jinya-cms-php-base-test-image:latest
+    name: registry.ulbricht.casa/jinya-cms/jinya-cms-php-base-test-image:latest
     pull_policy: always
   before_script:
     - install-php-extensions xdebug
@@ -17,7 +17,6 @@ stages:
 pint:
   extends:
     - .install-dependencies
-  image: harbor.ulbricht.casa/jinya/jinya-cms-php-base-test-image:latest
   stage: lint
   script:
     - ./vendor/bin/pint --test
@@ -25,7 +24,6 @@ pint:
 phpstan:
   extends:
     - .install-dependencies
-  image: harbor.ulbricht.casa/jinya/jinya-cms-php-base-test-image:latest
   stage: lint
   script:
     - ./tools/phpstan --no-progress analyze ./src ./tests --memory-limit=2048M
@@ -33,7 +31,6 @@ phpstan:
 phpunit:
   extends:
     - .install-dependencies
-  image: harbor.ulbricht.casa/jinya/jinya-cms-php-base-test-image:latest
   stage: test
   script:
     - ./tools/phpunit --log-junit report.xml --configuration ./phpunit.xml --coverage-text --coverage-cobertura=build/coverage.cobertura.xml
@@ -49,7 +46,7 @@ phpunit:
         path: build/coverage.cobertura.xml
 
 pages:
-  image: harbor.ulbricht.casa/proxy/library/node:latest
+  image: library/node:latest
   stage: deploy
   script:
     - cd docs
