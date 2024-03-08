@@ -81,7 +81,17 @@ class Router
     private function prepareRoutingCache(bool $force = false): void
     {
         $cacheFileExists = file_exists($this->cacheFile);
-        if (!$cacheFileExists || $force) {
+        $recreate = !$cacheFileExists || $force;
+        if (!$recreate) {
+            foreach ($this->extensions as $extension) {
+                if ($extension->recreateCache()) {
+                    $recreate = true;
+                    break;
+                }
+            }
+        }
+
+        if ($recreate) {
             $routingTable = $this->buildTable();
             file_put_contents($this->cacheFile, $routingTable);
         }

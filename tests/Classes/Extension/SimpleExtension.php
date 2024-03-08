@@ -36,4 +36,9 @@ include_once __DIR__ . '/simple-extension.php';
 \$r->addRoute('GET', '/hello-world-middleware', ['fn', 'something', [new \Jinya\Router\Tests\Classes\Middleware\AddHeaderMiddleware()]]);
 PHP;
     }
+
+    public function recreateCache(): bool
+    {
+        return true;
+    }
 }

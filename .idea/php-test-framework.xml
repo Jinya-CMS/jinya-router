@@ -5,8 +5,8 @@
       <tool tool_name="PHPUnit">
         <cache>
           <versions>
-            <info id="Local/home/imanuel/Projects/jinya-router/vendor/autoload.php" version="10.3.2" />
-            <info id="interpreter-73dd46e4-5629-4f69-88f2-87e40ac2e0bd" version="10.3.2" />
+            <info id="Local/home/imanuel/Projects/jinya-router/vendor/autoload.php" version="PHPUnit version can't be detected. Default PHP interpreter is not local" />
+            <info id="interpreter-73dd46e4-5629-4f69-88f2-87e40ac2e0bd" version="11.0.3" />
           </versions>
         </cache>
       </tool>

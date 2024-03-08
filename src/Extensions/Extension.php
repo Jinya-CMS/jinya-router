@@ -5,6 +5,7 @@ namespace Jinya\Router\Extensions;
 /**
  * Base class for Jinya Router extensions. With extensions, it is possible to extend the behavior and the generation of the routing table
  */
+
 /** @codeCoverageIgnore */
 abstract class Extension
 {
@@ -37,5 +38,15 @@ abstract class Extension
     public function additionalRoutes(): string
     {
         return '';
+    }
+
+    /**
+     * Allows the extension to force the regeneration of the route cache
+     *
+     * @return bool
+     */
+    public function recreateCache(): bool
+    {
+        return false;
     }
 }
