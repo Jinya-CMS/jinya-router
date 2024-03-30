@@ -268,11 +268,7 @@ class Router
                             if ($middlewareReflectionClass->hasProperty($ctorParam->name)) {
                                 $prop = $middlewareReflectionClass->getProperty($ctorParam->name);
                                 $val = $prop->getValue($middleware);
-                                if (is_string($val)) {
-                                    $parameter[] = "'$val'";
-                                } else {
-                                    $parameter[] = $val;
-                                }
+                                $parameter[] = var_export($val, true);
                             }
                         }
                     }
