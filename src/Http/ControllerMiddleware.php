@@ -54,8 +54,8 @@ class ControllerMiddleware implements MiddlewareInterface
                 $decodedBody = json_decode($request->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
                 $req = $req->withParsedBody($decodedBody);
             }
-            $controller->body = $request->getParsedBody();
-            $controller->request = $request;
+            $controller->body = $req->getParsedBody();
+            $controller->request = $req;
             $controller->templateEngine = $this->templateEngine;
         }
 

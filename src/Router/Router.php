@@ -12,11 +12,12 @@ use Jinya\Router\Http\ControllerMiddleware;
 use Jinya\Router\Http\FunctionMiddleware;
 use Jinya\Router\Templates\Engine;
 use Laminas\Diactoros\ResponseFactory;
-use Laminas\Diactoros\ServerRequestFactory;
 use Laminas\HttpHandlerRunner\Emitter\SapiEmitter;
 use Laminas\HttpHandlerRunner\RequestHandlerRunner;
 use Laminas\Stratigility\MiddlewarePipe;
+use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
+use Nyholm\Psr7Server\ServerRequestCreator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use ReflectionClass;
@@ -351,7 +352,16 @@ class Router
             $app,
             new SapiEmitter(),
             static function () {
-                return ServerRequestFactory::fromGlobals();
+                $psr17Factory = new Psr17Factory();
+
+                $creator = new ServerRequestCreator(
+                    $psr17Factory, // ServerRequestFactory
+                    $psr17Factory, // UriFactory
+                    $psr17Factory, // UploadedFileFactory
+                    $psr17Factory  // StreamFactory
+                );
+
+                return $creator->fromGlobals();
             },
             static function (Throwable $e) {
                 // @codeCoverageIgnoreStart
