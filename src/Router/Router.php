@@ -361,7 +361,18 @@ class Router
                     $psr17Factory  // StreamFactory
                 );
 
-                return $creator->fromGlobals();
+                $request = $creator->fromGlobals();
+                if (str_starts_with($request->getHeaderLine('Content-Type'), 'application/json') && in_array(
+                    $request->getMethod(),
+                    ['POST', 'PUT']
+                )) {
+                    $request->getBody()->rewind();
+                    /** @var array<mixed> $decodedBody */
+                    $decodedBody = json_decode($request->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+                    $request = $request->withParsedBody($decodedBody);
+                }
+
+                return $request;
             },
             static function (Throwable $e) {
                 // @codeCoverageIgnoreStart
