@@ -3,6 +3,7 @@
 namespace Jinya\Router\Http;
 
 use Jinya\Router\Templates\Engine;
+use JsonException;
 use Nyholm\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -35,6 +36,7 @@ class ControllerMiddleware implements MiddlewareInterface
     /**
      * @inheritDoc
      * @throws ReflectionException
+     * @throws JsonException
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -45,8 +47,15 @@ class ControllerMiddleware implements MiddlewareInterface
         $controller = $this->controller;
         $controller = new $controller();
         if ($controller instanceof AbstractController) {
-            $controller->request = $request;
+            $req = $request;
+            if (str_starts_with($request->getHeaderLine('Content-Type'), 'application/json')) {
+                $request->getBody()->rewind();
+                /** @var array<mixed> $decodedBody */
+                $decodedBody = json_decode($request->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+                $req = $req->withParsedBody($decodedBody);
+            }
             $controller->body = $request->getParsedBody();
+            $controller->request = $request;
             $controller->templateEngine = $this->templateEngine;
         }
 
