@@ -23,7 +23,7 @@
   "require-dev": {
     "ext-xdebug": "*",
     "roave/security-advisories": "dev-latest",
-    "laravel/pint": "v1.22.1"
+    "laravel/pint": "v1.23.0"
   },
   "autoload": {
     "psr-4": {
