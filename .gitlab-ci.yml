@@ -46,7 +46,7 @@ phpunit:
         path: build/coverage.cobertura.xml
 
 pages:
-  image: library/node:latest
+  image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/library/node:latest
   stage: deploy
   script:
     - cd docs
