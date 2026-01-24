@@ -249,7 +249,6 @@ class Router
      *
      * @param ReflectionClass|ReflectionMethod $methodOrClass The class or method to get the middlewares for
      * @return string[]
-     * @throws ReflectionException
      */
     private function getMiddlewares(ReflectionClass|ReflectionMethod $methodOrClass): array
     {
