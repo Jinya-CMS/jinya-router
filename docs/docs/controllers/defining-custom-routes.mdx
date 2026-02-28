@@ -19,7 +19,7 @@ Let's look at the code.
 <Tabs>
   <TabItem default value="admin-controller" label="AdminController.php">
 
-~~~php showLineNumbers
+```php showLineNumbers
 <?php
 
 namespace App\Controller;
@@ -42,12 +42,12 @@ class AdminController extends BaseController
         return $this->file(__DIR__ . '/index.html');
     }
 }
-~~~
+```
 
   </TabItem>
   <TabItem value="user-controller" label="UserController.php">
 
-~~~php showLineNumbers
+```php showLineNumbers
 <?php
 
 namespace App\Controller;
@@ -116,7 +116,7 @@ class UserController extends BaseController
         return $this->noContent();
     }
 }
-~~~
+```
 
   </TabItem>
 </Tabs>
@@ -125,7 +125,7 @@ class UserController extends BaseController
 
 The admin controller is rather simple. The key parts are highlighted below.
 
-~~~php {10,11,13,14,17,20} showLineNumbers
+```php {10,11,13,14,17,20} showLineNumbers
 <?php
 
 namespace App\Controller;
@@ -148,7 +148,7 @@ class AdminController extends BaseController
         return $this->file(__DIR__ . '/index.html');
     }
 }
-~~~
+```
 
 At first the controller is marked as a routable controller on line 10. The next line has the base class of the new controller, the `AbstractController`. The `AbstractController` contains a few helpers that will make your life easier developing with Jinya Router. We will dive into that a bit later.
 
@@ -160,7 +160,7 @@ On line 16 we check if the file exists and if it exists we use the `$this->file`
 
 ## The UserController
 
-~~~php {11,17,33,34,44,52,55,59,62} showLineNumbers
+```php {11,17,33,34,44,52,55,59,62} showLineNumbers
 <?php
 
 namespace App\Controller;
@@ -229,7 +229,7 @@ class UserController extends BaseController
         return $this->noContent();
     }
 }
-~~~
+```
 
 This controller contains a bit more code. Let's start with line 11. The controller attribute contains the base path, every route defined in the class will be prefixed with the given base path. That means, that the function `getUserListAction` will react to the path `/api/user`, while the function `getUserByIdAction` will react on `/api/user/1`.
 

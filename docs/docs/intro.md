@@ -14,7 +14,7 @@ Jinya Router is a small and capable router and request handler for PHP. It works
 * Routing table generation can be changed
 * Custom route support
 * Bring your own request handler or use the integrated one
-* PHP 8.1 and PHP 8.2 compatible
+* PHP 8.3+ compatible
 
 ## Questions?
 

@@ -7,7 +7,7 @@ const FeatureList = [
     title: 'Easy to Use',
     description: (
       <>
-        Jinya Router exists of only a handful of attributes and needs only a single method to handle requests.
+        Jinya Router consits of only a handful of attributes and needs only a single method to handle requests.
       </>
     ),
   },

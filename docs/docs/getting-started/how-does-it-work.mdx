@@ -26,19 +26,19 @@ This is how the cache file from our example looks like, first formatted and for 
 <Tabs>
   <TabItem groupId="formatting" value="formatted" label="Formatted" default>
 
-~~~php title="var/cache/routing/jinya-router.php"
+```php title="var/cache/routing/jinya-router.php"
 <?php
 return \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $r) {
         $r->addGroup("/", function (\FastRoute\RouteCollector $r) {
         $r->addRoute("POST", "", ["ctrl", "App\Controller\ExampleController", "postAction", []]);
     });
 });
-~~~
+```
 
   </TabItem>
   <TabItem groupId="formatting" value="unformatted" label="Unformatted">
 
-~~~php title="var/cache/routing/jinya-router.php"
+```php title="var/cache/routing/jinya-router.php"
 <?php
 return \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $r) {
 $r->addGroup("/", function (\FastRoute\RouteCollector $r) {
@@ -48,7 +48,7 @@ $r->addRoute("POST", "", ["ctrl", "App\Controller\ExampleController","postAction
 
 
 });
-~~~
+```
 
   </TabItem>
 </Tabs>

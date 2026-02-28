@@ -11,13 +11,13 @@ using [Composer](https://getcomposer.org/). This can be done by running the foll
 your `composer.json` file.
 
 ```bash
-composer require jinya/plates
+composer require jinya/router
 ```
 
 ```json title="composer.json"
 {
     "require": {
-        "jinya/plates": "3.*"
+        "jinya/router": "0.11.0"
     }
 }
 ```
