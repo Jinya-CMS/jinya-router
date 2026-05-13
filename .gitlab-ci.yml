@@ -44,3 +44,17 @@ phpunit:
       coverage_report:
         coverage_format: cobertura
         path: build/coverage.cobertura.xml
+
+pages:
+  image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/oven/bun:latest
+  stage: deploy
+  script:
+    - cd docs
+    - bun install
+    - bun run build
+    - mv ./build ../public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
